@@ -42,6 +42,45 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/menu/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: id };
+            const result = await menuCollection.findOne(query);
+            console.log('found item result is', result);
+            res.send(result);
+        })
+
+        app.post('/menu', async (req, res) => {
+            const item = req.body;
+            console.log('new item', item);
+            const result = await menuCollection.insertOne(item);
+            res.send(result);
+        })
+
+        app.patch('/menu/:id', async (req, res) => {
+            const id = req.params.id;
+            const item = req.body;
+            const filter = { _id: id }
+            const updateUser = {
+                $set: {
+                    name: item.name,
+                    category: item.category,
+                    price: item.price,
+                    image: item.image,
+                    recipe: item.recipe
+                }
+            }
+            const result = await menuCollection.updateOne(filter, updateUser);
+            res.send(result);
+        })
+
+        app.delete('/menu/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await menuCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // review collection related API
         app.get('/review', async (req, res) => {
             const cursor = reviewCollection.find();
@@ -73,7 +112,7 @@ async function run() {
 
         // middlewares For Verification Token JWT
         const verifyToken = (req, res, next) => {
-            console.log('inside verify token', req.headers.authorization);
+            // console.log('inside verify token', req.headers.authorization);
             if (!req.headers.authorization) {
                 return res.status(401).send({ message: 'unauthorized access' });
             }
@@ -136,7 +175,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/users/admin/:id',verifyToken,verifyAdmin, async (req, res) => {
+        app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updatedUser = {
@@ -148,7 +187,7 @@ async function run() {
             res.send(result);
         })
 
-        app.delete('/users/:id',verifyToken,verifyAdmin, async (req, res) => {
+        app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await userCollection.deleteOne(query);
